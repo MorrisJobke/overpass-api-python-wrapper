@@ -49,7 +49,7 @@ class API(object):
             print(oe)
             sys.exit(1)
 
-        if "elements" not in response or len(response["elements"]) == 0:
+        if len(response.get("elements", [])) == 0:
             raise OverpassException(
                 204,
                 'No OSM features satisfied your query'
@@ -59,7 +59,7 @@ class API(object):
             return response
 
         # construct geojson
-        return self._asGeoJSON(response["elements"])
+        return self._asGeoJSON(response.get("elements", []))
 
     def Search(self, feature_type, regex=False):
         """Search for something."""
@@ -121,12 +121,12 @@ class API(object):
 
         features = []
         for elem in elements:
-            elem_type = elem["type"]
+            elem_type = elem.get("type")
             if elem_type == "node":
                 geometry = geojson.Point((elem["lon"], elem["lat"]))
             elif elem_type == "way":
                 points = []
-                for coords in elem["geometry"]:
+                for coords in elem.get("geometry", []):
                     points.append((coords["lon"], coords["lat"]))
                 geometry = geojson.LineString(points)
             else:
